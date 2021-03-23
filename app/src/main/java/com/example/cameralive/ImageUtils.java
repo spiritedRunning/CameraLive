@@ -20,7 +20,7 @@ public class ImageUtils {
     public static byte[] getBytes(ImageProxy image, int rotationDegrees, int width, int height) {
         int format = image.getFormat();
         if (format != ImageFormat.YUV_420_888) {
-//            throw new Exception("not support image format!");
+            throw new IllegalStateException("not support image format!");
         }
 
         ByteBuffer yuv420 = ByteBuffer.allocate(image.getWidth() * image.getHeight() * 3 / 2);
