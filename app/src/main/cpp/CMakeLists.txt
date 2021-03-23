@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.4.1)
 add_library(
              native-lib
              SHARED
-             native-lib.cpp )
+             native-lib.cpp
+            JavaCallHelper.cpp)
 
 
 
@@ -19,7 +20,8 @@ add_subdirectory(libyuv)
 
 add_library(ImageUtils
         SHARED
-        ImageUtils.cpp)
+        ImageUtils.cpp
+        )
 
 target_link_libraries(ImageUtils
                     yuv)

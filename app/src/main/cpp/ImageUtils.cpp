@@ -39,4 +39,3 @@ Java_com_example_cameralive_ImageUtils_rotation(JNIEnv *env, jclass clazz, jbyte
     return result;
 
 }
-

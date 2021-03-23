@@ -20,6 +20,7 @@ public class ImageUtils {
     public static byte[] getBytes(ImageProxy image, int rotationDegrees, int width, int height) {
         int format = image.getFormat();
         if (format != ImageFormat.YUV_420_888) {
+            // https://developer.android.google.cn/training/camerax/analyze
             throw new IllegalStateException("not support image format!");
         }
 
