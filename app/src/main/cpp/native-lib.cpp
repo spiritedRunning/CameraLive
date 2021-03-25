@@ -13,7 +13,7 @@ uint64_t startTime;
 
 char *path = 0;
 
-
+// init
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     javaVM = vm;
     return JNI_VERSION_1_4;
