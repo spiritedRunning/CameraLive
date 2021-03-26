@@ -15,8 +15,14 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags ""
+                abiFilters 'armeabi-v7a'
             }
         }
+
+        ndk {
+            abiFilters 'armeabi-v7a'
+        }
+
     }
 
     buildTypes {

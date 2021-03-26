@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include "librtmp/rtmp.h"
 #include "JavaCallHelper.h"
+#include "VideoChannel.h"
 
 
 JavaVM *javaVM = 0;
@@ -11,12 +12,30 @@ JavaCallHelper *helper = 0;
 RTMP *rtmp = 0;
 uint64_t startTime;
 
+VideoChannel *videoChannel = 0;
+
 char *path = 0;
 
-// init
+pthread_mutex_t mutex;
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     javaVM = vm;
     return JNI_VERSION_1_4;
+}
+
+
+void callback(RTMPPacket *packet) {
+    pthread_mutex_lock(&mutex);
+    if (rtmp) {
+        packet->m_nInfoField2 = rtmp->m_stream_id;
+        packet->m_nTimeStamp = RTMP_GetTime() - startTime;
+        RTMP_SendPacket(rtmp, packet, 1);
+    }
+    pthread_mutex_unlock(&mutex);
+
+
+    RTMPPacket_Free(packet);
+    delete packet;
 }
 
 void *connect(void *args) {
@@ -65,37 +84,61 @@ Java_com_example_cameralive_RtmpClient_connect(JNIEnv *env, jobject thiz, jstrin
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_cameralive_RtmpClient_disConnect(JNIEnv *env, jobject thiz) {
+    pthread_mutex_lock(&mutex);
+    if (rtmp) {
+        RTMP_Close(rtmp);
+        RTMP_Free(rtmp);
+        rtmp = 0;
+    }
 
+    if (videoChannel) {
+        videoChannel->resetPts();
+    }
+
+    pthread_mutex_unlock(&mutex);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_cameralive_RtmpClient_nativeInit(JNIEnv *env, jobject thiz) {
-
+    helper = new JavaCallHelper(javaVM, env, thiz);
+    pthread_mutex_init(&mutex, 0);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_cameralive_RtmpClient_nativeDeInit(JNIEnv *env, jobject thiz) {
-
+    if (helper) {
+        delete(helper);
+        helper = 0;
+    }
+    pthread_mutex_unlock(&mutex);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_cameralive_RtmpClient_initVideoEnv(JNIEnv *env, jobject thiz, jint width,
                                                     jint height, jint fps, jint bit_rate) {
-
+    videoChannel = new VideoChannel;
+    videoChannel->openCodec(width, height, fps, bit_rate);
+    videoChannel->setCallback(callback);
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_cameralive_RtmpClient_releaseVideoEnv(JNIEnv *env, jobject thiz) {
-
+    if (videoChannel) {
+        delete videoChannel;
+        videoChannel = 0;
+    }
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_cameralive_RtmpClient_nativeSendVideo(JNIEnv *env, jobject thiz,
                                                        jbyteArray buffer) {
+    jbyte  *data = env->GetByteArrayElements(buffer, 0);
+    videoChannel->encode(reinterpret_cast<uint8_t *>(data));
 
+    env->ReleaseByteArrayElements(buffer, data, 0);
 }
