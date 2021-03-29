@@ -1,7 +1,13 @@
 package com.example.cameralive;
 
+import android.content.Context;
 import android.graphics.ImageFormat;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.util.Log;
+import android.util.Size;
 
 import androidx.camera.core.ImageProxy;
 
@@ -112,5 +118,23 @@ public class ImageUtils {
     }
 
 
+    public static Size[] getSupportSize(Context context) {
+        CameraManager cm = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+        try {
+            for (String cameraId : cm.getCameraIdList()) {
+                CameraCharacteristics cameraCharacteristics = cm.getCameraCharacteristics(cameraId);
+                StreamConfigurationMap map = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                if (map != null) {
+                    return map.getOutputSizes(ImageFormat.YUV_420_888);
+                }
+            }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private static native byte[] rotation(byte[] data, int width, int height, int degrees);
+
+    private static native void scale(byte[] src, byte[] dst, int srcWidth, int srcHeight, int dstWidth, int dstHeight);
 }

@@ -39,3 +39,48 @@ Java_com_example_cameralive_ImageUtils_rotation(JNIEnv *env, jclass clazz, jbyte
     return result;
 
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_cameralive_ImageUtils_scale(JNIEnv *env, jclass clazz, jbyteArray src_,
+                                             jbyteArray dst_, jint src_width, jint src_height,
+                                             jint dst_width, jint dst_height) {
+   jbyte *data = env->GetByteArrayElements(src_, 0);
+   uint8_t *src = reinterpret_cast<uint8_t *>(data);
+
+   int64_t size = (dst_width * dst_height * 3) >> 1;
+   uint8_t dst[size];
+
+   uint8_t  *src_y, *src_u, *src_v;
+   int src_stride_y, src_stride_u, src_stride_v;
+
+   uint8_t *dst_y, *dst_u, *dst_v;
+   int dst_stride_y, dst_stride_u, dst_stride_v;
+
+   src_stride_y = src_width;
+   src_stride_u = src_width >> 1;
+   src_stride_v = src_stride_u;
+
+   dst_stride_y = dst_width;
+   dst_stride_u = dst_width >> 1;
+   dst_stride_v = dst_stride_u;
+
+   int src_y_size = src_width * src_height;
+   int src_u_size = src_stride_u * (src_height >> 1);
+   src_y = src;
+   src_u = src + src_y_size;
+   src_v = src + src_y_size + src_u_size;
+
+   int dst_y_size = dst_width * dst_height;
+   int dst_u_size = dst_stride_u * (dst_height >> 1);
+   dst_y = dst;
+   dst_u = dst + dst_y_size;
+   dst_v = dst + dst_y_size + dst_u_size;
+
+   libyuv::I420Scale(src_y, src_stride_y, src_u, src_stride_u, src_v, src_stride_v, src_width, src_height,
+                    dst_y, dst_stride_y, dst_u, dst_stride_u, dst_v, dst_stride_v, dst_width, dst_height,
+                    libyuv::FilterMode::kFilterNone);
+
+   env->ReleaseByteArrayElements(src_, data, 0);
+   env->SetByteArrayRegion(dst_, 0, size, reinterpret_cast<const jbyte *>(dst));
+}
