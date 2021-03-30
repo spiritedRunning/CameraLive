@@ -23,6 +23,8 @@ public class ImageUtils {
         System.loadLibrary("ImageUtils");
     }
 
+    private static ByteBuffer yuv420;
+
     public static byte[] getBytes(ImageProxy image, int rotationDegrees, int width, int height) {
         int format = image.getFormat();
         if (format != ImageFormat.YUV_420_888) {
@@ -30,8 +32,15 @@ public class ImageUtils {
             throw new IllegalStateException("not support image format!");
         }
 
-        ByteBuffer yuv420 = ByteBuffer.allocate(image.getWidth() * image.getHeight() * 3 / 2);
         ImageProxy.PlaneProxy[] planes = image.getPlanes();
+        int size = image.getWidth() * image.getHeight() * 3 / 2;
+
+        // 避免内存抖动
+        if (yuv420 == null || yuv420.capacity() < size) {
+            yuv420 = ByteBuffer.allocate(size);
+        }
+        yuv420.position(0);
+
 
 
         /**
@@ -111,21 +120,21 @@ public class ImageUtils {
             result = yuv420.array();
 
             if (rotationDegrees == 90 || rotationDegrees == 270) {
-                result = rotation(result, image.getWidth(), image.getHeight(), rotationDegrees);
-                srcWidth = image.getHeight();
-                srcHeight = image.getWidth();
+                rotation(result, image.getWidth(), image.getHeight(), rotationDegrees);
+                srcWidth = image.getWidth();
+                srcHeight = image.getHeight();
             }
 
-//            if (srcWidth != width || srcHeight != height) {
-//                Log.e(TAG, "scale bytes, srcWidth = " + srcWidth + ", srcHeight = " + srcHeight + ", width = " + width + ", height = " + height);
-//                // 调整scaleBytes, 避免内存抖动
-//                int scaleSize = width * height * 3 / 2;
-//                if (scaleBytes == null || scaleBytes.length < scaleSize) {
-//                    scaleBytes = new byte[scaleSize];
-//                }
-//                scale(result, scaleBytes, srcWidth, srcHeight, width, height);
-//                return scaleBytes;
-//            }
+            if (srcWidth != width || srcHeight != height) {
+                Log.e(TAG, "scale bytes, srcWidth = " + srcWidth + ", srcHeight = " + srcHeight + ", width = " + width + ", height = " + height);
+                // 调整scaleBytes, 避免内存抖动
+                int scaleSize = width * height * 3 / 2;
+                if (scaleBytes == null || scaleBytes.length < scaleSize) {
+                    scaleBytes = new byte[scaleSize];
+                }
+                scale(result, scaleBytes, srcWidth, srcHeight, width, height);
+                return scaleBytes;
+            }
         } catch (Exception e) {
             Log.e(TAG, "BufferUnderflowException pos: " + planeBuffer.position());
         }
@@ -150,7 +159,7 @@ public class ImageUtils {
         return null;
     }
 
-    private static native byte[] rotation(byte[] data, int width, int height, int degrees);
+    private static native void rotation(byte[] data, int width, int height, int degrees);
 
     private static native void scale(byte[] src, byte[] dst, int srcWidth, int srcHeight, int dstWidth, int dstHeight);
 }

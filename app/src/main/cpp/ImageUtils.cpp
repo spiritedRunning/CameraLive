@@ -8,7 +8,7 @@
 
 
 extern "C"
-JNIEXPORT jbyteArray JNICALL
+JNIEXPORT void JNICALL
 Java_com_example_cameralive_ImageUtils_rotation(JNIEnv *env, jclass clazz, jbyteArray data_,
                                                 jint width, jint height, jint degrees) {
 
@@ -36,8 +36,8 @@ Java_com_example_cameralive_ImageUtils_rotation(JNIEnv *env, jclass clazz, jbyte
     env->SetByteArrayRegion(result, 0, size, reinterpret_cast<const jbyte *>(dst));
 
     env->ReleaseByteArrayElements(data_, data, 0);
-    return result;
 
+    env->SetByteArrayRegion(data_, 0, size, reinterpret_cast<const jbyte *>(dst));
 }
 
 extern "C"
