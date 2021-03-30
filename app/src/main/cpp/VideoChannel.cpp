@@ -5,7 +5,6 @@
 #include "VideoChannel.h"
 #include <rtmp.h>
 #include <android/log.h>
-#include <x264.h>
 #include <alloca.h>
 #include <cstring>
 

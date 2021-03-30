@@ -5,7 +5,8 @@
 #ifndef CAMERALIVE_VIDEOCHANNEL_H
 #define CAMERALIVE_VIDEOCHANNEL_H
 
-#include "x264.h"
+#include <cstdint>
+#include <x264.h>
 #include "Callback.h"
 
 /**

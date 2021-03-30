@@ -4,6 +4,7 @@
 #include "librtmp/rtmp.h"
 #include "JavaCallHelper.h"
 #include "VideoChannel.h"
+#include "log.h"
 
 
 JavaVM *javaVM = 0;
@@ -43,16 +44,21 @@ void *connect(void *args) {
     rtmp = RTMP_Alloc();
     RTMP_Init(rtmp);
 
+    LOGE("CONNECT path: %s", path);
     do {
         // 解析url地址，可能失败（地址不合法）
         ret = RTMP_SetupURL(rtmp, path);
         if (!ret) {
+            LOGE("setup url failed");
             break;
         }
 
         RTMP_EnableWrite(rtmp);
-        if (!(ret = RTMP_Connect(rtmp, nullptr))) break;
+        LOGE("rtmp connect");
+        if (!(ret = RTMP_Connect(rtmp, 0))) break;
+        LOGE("rtmp connect stream");
         if (!(ret = RTMP_ConnectStream(rtmp, 0))) break;
+        LOGE("rtmp connect succ");
     } while (false);
 
     if (!ret) {
@@ -64,6 +70,7 @@ void *connect(void *args) {
     delete(path);
     path = 0;
 
+    LOGE("rtmp connect state: %d", ret);
     // 通知Java开始推流
     helper->onPrepare(ret);
     startTime = RTMP_GetTime();
@@ -137,6 +144,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_cameralive_RtmpClient_nativeSendVideo(JNIEnv *env, jobject thiz,
                                                        jbyteArray buffer) {
+    LOGE("native send video start");
     jbyte  *data = env->GetByteArrayElements(buffer, 0);
     videoChannel->encode(reinterpret_cast<uint8_t *>(data));
 

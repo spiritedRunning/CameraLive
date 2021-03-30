@@ -15,13 +15,13 @@ import java.nio.ByteBuffer;
 
 public class ImageUtils {
     private static final String TAG = "ImageUtils";
+    private static ByteBuffer planeBuffer;
+    private static byte[] scaleBytes;
+    private static byte[] result;
 
     static {
         System.loadLibrary("ImageUtils");
     }
-
-    private static ByteBuffer planeBuffer;
-    private static byte[] result;
 
     public static byte[] getBytes(ImageProxy image, int rotationDegrees, int width, int height) {
         int format = image.getFormat();
@@ -81,7 +81,7 @@ public class ImageUtils {
                             if (pixelStride == 1) { // uv没混合
                                 if (k >= uvWidth) break;
                             } else if (pixelStride == 2) { // uv混合
-                                if (k >= image.getWidth() ) break;
+                                if (k >= image.getWidth()) break;
                             }
                         }
                         if (planeBuffer.remaining() == 0) {
@@ -106,10 +106,26 @@ public class ImageUtils {
             }
 
 
+            int srcWidth = image.getWidth();
+            int srcHeight = image.getHeight();
             result = yuv420.array();
+
             if (rotationDegrees == 90 || rotationDegrees == 270) {
                 result = rotation(result, image.getWidth(), image.getHeight(), rotationDegrees);
+                srcWidth = image.getHeight();
+                srcHeight = image.getWidth();
             }
+
+//            if (srcWidth != width || srcHeight != height) {
+//                Log.e(TAG, "scale bytes, srcWidth = " + srcWidth + ", srcHeight = " + srcHeight + ", width = " + width + ", height = " + height);
+//                // 调整scaleBytes, 避免内存抖动
+//                int scaleSize = width * height * 3 / 2;
+//                if (scaleBytes == null || scaleBytes.length < scaleSize) {
+//                    scaleBytes = new byte[scaleSize];
+//                }
+//                scale(result, scaleBytes, srcWidth, srcHeight, width, height);
+//                return scaleBytes;
+//            }
         } catch (Exception e) {
             Log.e(TAG, "BufferUnderflowException pos: " + planeBuffer.position());
         }

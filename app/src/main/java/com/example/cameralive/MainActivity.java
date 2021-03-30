@@ -1,27 +1,12 @@
 package com.example.cameralive;
 
 import android.Manifest;
-import android.graphics.SurfaceTexture;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.util.Size;
 import android.view.TextureView;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.CameraX;
-import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageAnalysisConfig;
-import androidx.camera.core.ImageProxy;
-import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
 import androidx.core.app.ActivityCompat;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startLive(View view) {
-        rtmpClient.startLive("rtmp://");
+        rtmpClient.startLive("rtmp://192.168.1.105/rtmplive/mac_stream");
     }
 
     public void stopLive(View view) {

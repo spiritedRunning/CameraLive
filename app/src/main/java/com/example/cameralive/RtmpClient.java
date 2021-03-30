@@ -62,7 +62,8 @@ public class RtmpClient {
      */
     private void onPrepare(boolean isConnected) {
         this.isConnected = isConnected;
-        Log.e(TAG, "can start live...");
+
+        Log.e(TAG, "can start live: " + isConnected);
     }
 
     public void sendVideo(byte[] buffer) {

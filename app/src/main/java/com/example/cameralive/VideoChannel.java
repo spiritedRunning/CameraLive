@@ -3,6 +3,7 @@ package com.example.cameralive;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.util.Size;
 import android.view.TextureView;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import java.io.FileOutputStream;
 
 
 public class VideoChannel  implements Preview.OnPreviewOutputUpdateListener, ImageAnalysis.Analyzer {
+    private static final String TAG = "VideoChannel";
 
     private CameraX.LensFacing currentFacing = CameraX.LensFacing.BACK;
     private LifecycleOwner lifeCycleOwner;
@@ -84,6 +86,7 @@ public class VideoChannel  implements Preview.OnPreviewOutputUpdateListener, Ima
     @Override
     public void analyze(ImageProxy image, int rotationDegrees) {
         if (rtmpClient.isConnected()) {
+            Log.e(TAG, "rtmpClient is connect");
             byte[] bytes = ImageUtils.getBytes(image, rotationDegrees, image.getWidth(), image.getHeight());
             rtmpClient.sendVideo(bytes);
         }
