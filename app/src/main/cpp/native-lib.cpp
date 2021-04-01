@@ -5,6 +5,7 @@
 #include "JavaCallHelper.h"
 #include "VideoChannel.h"
 #include "log.h"
+#include "AudioChannel.h"
 
 
 JavaVM *javaVM = 0;
@@ -14,6 +15,7 @@ RTMP *rtmp = 0;
 uint64_t startTime;
 
 VideoChannel *videoChannel = 0;
+AudioChannel *audioChannel = 0;
 
 char *path = 0;
 
@@ -59,6 +61,10 @@ void *connect(void *args) {
         LOGE("rtmp connect stream");
         if (!(ret = RTMP_ConnectStream(rtmp, 0))) break;
         LOGE("rtmp connect succ");
+
+        // 发送audio specific config
+        RTMPPacket *packet = audioChannel->getAudioConfig();
+        callback(packet);
     } while (false);
 
     if (!ret) {
@@ -149,4 +155,29 @@ Java_com_example_cameralive_RtmpClient_nativeSendVideo(JNIEnv *env, jobject thiz
     videoChannel->encode(reinterpret_cast<uint8_t *>(data));
 
     env->ReleaseByteArrayElements(buffer, data, 0);
+}
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_cameralive_RtmpClient_initAudioEnc(JNIEnv *env, jobject thiz, jint sample_rate,
+                                                    jint channels) {
+    audioChannel = new AudioChannel();
+    audioChannel->setCallback(callback);
+    audioChannel->openCodec(sample_rate, channels);
+    return audioChannel->getInputByteNum();
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_cameralive_RtmpClient_releaseAudioEnc(JNIEnv *env, jobject thiz) {
+    // TODO: implement releaseAudioEnc()
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_cameralive_RtmpClient_nativeSendAudio(JNIEnv *env, jobject thiz, jbyteArray buffer,
+                                                       jint len) {
+    // TODO: implement nativeSendAudio()
 }

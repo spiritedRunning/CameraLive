@@ -18,6 +18,7 @@ public class RtmpClient {
     private int height;
     private boolean isConnected;
     private VideoChannel videoChannel;
+    private AudioChannel audioChannel;
 
     public RtmpClient(LifecycleOwner lifecycleOwner) {
         this.lifecycleOwner = lifecycleOwner;
@@ -29,6 +30,10 @@ public class RtmpClient {
         this.height = height;
         videoChannel = new VideoChannel(this.lifecycleOwner, displayer, this);
         initVideoEnv(width, height, fps, birRate);
+    }
+
+    public void initAudio(int sampleRate, int channels) {
+//        audioChannel = new AudioChannel(sampleRate, )
     }
 
     public void toggleCamera() {
@@ -63,11 +68,16 @@ public class RtmpClient {
     private void onPrepare(boolean isConnected) {
         this.isConnected = isConnected;
 
+
         Log.e(TAG, "can start live: " + isConnected);
     }
 
     public void sendVideo(byte[] buffer) {
         nativeSendVideo(buffer);
+    }
+
+    public void sendAudio(byte[] buffer, int sample_len) {
+        nativeSendAudio(buffer, sample_len);
     }
 
     public void release() {
@@ -90,4 +100,10 @@ public class RtmpClient {
 
     private native void nativeSendVideo(byte[] buffer);
 
+
+    private native int initAudioEnc(int sampleRate, int channels);
+
+    private native void releaseAudioEnc();
+
+    private native void nativeSendAudio(byte[] buffer, int len);
 }

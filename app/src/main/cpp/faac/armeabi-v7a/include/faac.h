@@ -83,6 +83,15 @@ int FAACAPI faacEncGetDecoderSpecificInfo(faacEncHandle hEncoder, unsigned char 
 					  unsigned long *pSizeOfDecoderSpecificInfo);
 
 
+/**
+ *
+ * @param hEncoder
+ * @param inputBuffer
+ * @param samplesInput 输入的样本数
+ * @param outputBuffer 输出，编码之后的结果
+ * @param bufferSize 编码结果缓冲区能接收数据的个数
+ * @return
+ */
 int FAACAPI faacEncEncode(faacEncHandle hEncoder, int32_t * inputBuffer, unsigned int samplesInput,
 			 unsigned char *outputBuffer,
 			 unsigned int bufferSize);

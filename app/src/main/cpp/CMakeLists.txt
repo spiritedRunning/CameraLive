@@ -9,7 +9,8 @@ add_library(
              SHARED
              native-lib.cpp
             JavaCallHelper.cpp
-            VideoChannel.cpp)
+            VideoChannel.cpp
+            AudioChannel.cpp)
 
 
 include_directories(${CMAKE_SOURCE_DIR}/x264/${ANDROID_ABI}/include)
