@@ -28,14 +28,11 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 
 
 void callback(RTMPPacket *packet) {
-    pthread_mutex_lock(&mutex);
     if (rtmp) {
         packet->m_nInfoField2 = rtmp->m_stream_id;
         packet->m_nTimeStamp = RTMP_GetTime() - startTime;
         RTMP_SendPacket(rtmp, packet, 1);
     }
-    pthread_mutex_unlock(&mutex);
-
 
     RTMPPacket_Free(packet);
     delete packet;
@@ -139,7 +136,7 @@ Java_com_example_cameralive_RtmpClient_initVideoEnv(JNIEnv *env, jobject thiz, j
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_cameralive_RtmpClient_releaseVideoEnv(JNIEnv *env, jobject thiz) {
+Java_com_example_cameralive_RtmpClient_releaseVideoEnc(JNIEnv *env, jobject thiz) {
     if (videoChannel) {
         delete videoChannel;
         videoChannel = 0;
@@ -152,7 +149,10 @@ Java_com_example_cameralive_RtmpClient_nativeSendVideo(JNIEnv *env, jobject thiz
                                                        jbyteArray buffer) {
     LOGE("native send video start");
     jbyte  *data = env->GetByteArrayElements(buffer, 0);
+
+    pthread_mutex_lock(&mutex);
     videoChannel->encode(reinterpret_cast<uint8_t *>(data));
+    pthread_mutex_unlock(&mutex);
 
     env->ReleaseByteArrayElements(buffer, data, 0);
 }
@@ -168,16 +168,24 @@ Java_com_example_cameralive_RtmpClient_initAudioEnc(JNIEnv *env, jobject thiz, j
     return audioChannel->getInputByteNum();
 }
 
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_cameralive_RtmpClient_releaseAudioEnc(JNIEnv *env, jobject thiz) {
-    // TODO: implement releaseAudioEnc()
-}
-
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_cameralive_RtmpClient_nativeSendAudio(JNIEnv *env, jobject thiz, jbyteArray buffer,
                                                        jint len) {
-    // TODO: implement nativeSendAudio()
+    jbyte *data = env->GetByteArrayElements(buffer, 0);
+    pthread_mutex_lock(&mutex);
+    audioChannel->encode(reinterpret_cast<int32_t *>(data), len);
+    pthread_mutex_unlock(&mutex);
+
+    env->ReleaseByteArrayElements(buffer, data, 0);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_cameralive_RtmpClient_releaseAudioEnc(JNIEnv *env, jobject thiz) {
+   if (audioChannel) {
+       delete audioChannel;
+       audioChannel = 0;
+   }
+}
+

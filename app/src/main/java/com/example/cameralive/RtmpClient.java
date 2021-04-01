@@ -33,7 +33,9 @@ public class RtmpClient {
     }
 
     public void initAudio(int sampleRate, int channels) {
-//        audioChannel = new AudioChannel(sampleRate, )
+        audioChannel = new AudioChannel(sampleRate, channels, this);
+        int inputByteNum = initAudioEnc(sampleRate, channels);
+        audioChannel.setInputByteNum(inputByteNum);
     }
 
     public void toggleCamera() {
@@ -58,6 +60,7 @@ public class RtmpClient {
 
     public void stopLive() {
         isConnected = false;
+        audioChannel.stop();
         disConnect();
         Log.e(TAG, "stop live...");
     }
@@ -68,7 +71,7 @@ public class RtmpClient {
     private void onPrepare(boolean isConnected) {
         this.isConnected = isConnected;
 
-
+        audioChannel.start();
         Log.e(TAG, "can start live: " + isConnected);
     }
 
@@ -82,7 +85,9 @@ public class RtmpClient {
 
     public void release() {
         videoChannel.release();
-        releaseVideoEnv();
+        audioChannel.release();
+        releaseVideoEnc();
+        releaseAudioEnc();
         nativeDeInit();
     }
 
@@ -96,7 +101,7 @@ public class RtmpClient {
 
     private native void initVideoEnv(int width, int height, int fps, int bitRate);
 
-    private native void releaseVideoEnv();
+    private native void releaseVideoEnc();
 
     private native void nativeSendVideo(byte[] buffer);
 

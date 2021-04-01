@@ -23,12 +23,14 @@ public class MainActivity extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
         }, 100);
 
 
         rtmpClient = new RtmpClient(this);
         rtmpClient.initVideo(textureView, 480, 640, 10, 640_000);
+        rtmpClient.initAudio(44100, 2);
     }
 
 
@@ -37,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startLive(View view) {
-        rtmpClient.startLive("rtmp://192.168.1.105/rtmplive/mac_stream");
+        rtmpClient.startLive("rtmp://192.168.1.103/rtmplive/android");
     }
 
     public void stopLive(View view) {

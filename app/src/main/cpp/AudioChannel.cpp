@@ -74,7 +74,7 @@ RTMPPacket *AudioChannel::getAudioConfig() {
     packet->m_nBodySize = len + 2;
     packet->m_packetType = RTMP_PACKET_TYPE_AUDIO;
     packet->m_nChannel = 0x11;  // 分配一个和视频通道不同的
-    packet->m_headerType = RTMP_PACKET_SIZE_SMALL;
+    packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
 
     return packet;
 }
